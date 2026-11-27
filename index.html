@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice - Holland Family Home Services, Inc.</title>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Subtle hover highlight for editable fields on screen */
+    [contenteditable="true"] {
+      outline: none;
+      border-radius: 0.375rem;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    [contenteditable="true"]:hover {
+      background-color: rgba(59, 130, 246, 0.06);
+    }
+
+    [contenteditable="true"]:focus {
+      background-color: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+    }
+
+    /* Clean Print Formatting */
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .invoice-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0.35in !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      [contenteditable="true"]:hover,
+      [contenteditable="true"]:focus {
+        background-color: transparent !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen py-6 px-3 sm:px-6 lg:px-8">
+
+  <!-- Top Action Toolbar (Hidden when printing) -->
+  <div class="no-print max-w-4xl mx-auto mb-5 bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white font-bold text-sm">HF</span>
+      <div>
+        <p class="text-sm font-semibold text-slate-900">Editable Invoice Preview</p>
+        <p class="text-xs text-slate-500">Click any text or price directly on the invoice to customize before printing or saving as PDF.</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Status Toggle Button -->
+      <button
+        id="statusToggleBtn"
+        type="button"
+        onclick="togglePaidStatus()"
+        class="px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition cursor-pointer"
+      >
+        Status: Due Upon Receipt
+      </button>
+
+      <!-- Add Line Item Button -->
+      <button
+        type="button"
+        onclick="addLineItem()"
+        class="px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+      >
+        + Add Item
+      </button>
+
+      <!-- Copy Summary Text Button -->
+      <button
+        type="button"
+        onclick="copyInvoiceSummary()"
+        class="px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+      >
+        Copy Summary
+      </button>
+
+      <!-- Print / Save PDF Button -->
+      <button
+        type="button"
+        onclick="window.print()"
+        class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition cursor-pointer"
+      >
+        Print / Save PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Box (Replaces alert()) -->
+  <div id="toastMessage" class="no-print fixed bottom-5 right-5 z-50 hidden items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg">
+    <span id="toastText">Copied to clipboard</span>
+  </div>
+
+  <!-- Main Printable Invoice Container -->
+  <main class="invoice-sheet max-w-4xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-md p-6 sm:p-10 md:p-12">
+
+    <!-- Header Section: Company Info & Invoice Title -->
+    <header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 pb-8 border-b border-slate-200">
+      <div>
+        <div class="inline-flex items-center gap-3 mb-3">
+          <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-lg tracking-tight">
+            HF
+          </div>
+          <div>
+            <h1 contenteditable="true" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight px-1 -mx-1">
+              Holland Family Home Services, Inc.
+            </h1>
+            <p contenteditable="true" class="text-xs font-medium uppercase tracking-wider text-slate-500 px-1 -mx-1">
+              Quality Craftsmanship &bull; Reliable Service
+            </p>
+          </div>
+        </div>
+        <div class="text-sm text-slate-600 space-y-0.5 mt-2">
+          <p contenteditable="true" class="px-1 -mx-1">70 Copperhead Trail, Murphy, NC 28906</p>
+          <p contenteditable="true" class="px-1 -mx-1">Phone: (828) 541-2442</p>
+          <p contenteditable="true" class="px-1 -mx-1">Email: TheHollandSeven@gmail.com</p>
+        </div>
+      </div>
+
+      <div class="sm:text-right flex flex-col sm:items-end">
+        <span class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 uppercase">Invoice</span>
+        <div class="mt-3 space-y-1 text-sm">
+          <div class="flex sm:justify-end gap-2">
+            <span class="text-slate-500 font-medium">Invoice #:</span>
+            <span id="invoiceNumber" contenteditable="true" class="font-semibold text-slate-900 px-1 -mx-1">INV-2026-1127</span>
+          </div>
+          <div class="flex sm:justify-end gap-2">
+            <span class="text-slate-500 font-medium">Date Issued:</span>
+            <span id="invoiceDate" contenteditable="true" class="font-semibold text-slate-900 px-1 -mx-1">November 27, 2026</span>
+          </div>
+          <div class="flex sm:justify-end gap-2">
+            <span class="text-slate-500 font-medium">Payment Terms:</span>
+            <span contenteditable="true" class="font-semibold text-slate-900 px-1 -mx-1">Due Upon Receipt</span>
+          </div>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="mt-3">
+          <span
+            id="invoiceStatusBadge"
+            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 text-amber-800 border border-amber-200"
+          >
+            Balance Due
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Client & Job Location Details -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-6 py-7 border-b border-slate-200">
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Bill To</h2>
+        <p id="clientName" contenteditable="true" class="text-base font-bold text-slate-900 px-1 -mx-1">
+          James Fritz
+        </p>
+        <p id="clientAddress" contenteditable="true" class="text-sm text-slate-600 mt-1 px-1 -mx-1">
+          115 Serenity Point Dr<br>Murphy, NC 28906
+        </p>
+        <p id="clientContact" contenteditable="true" class="text-sm text-slate-600 mt-1 px-1 -mx-1">
+          
+        </p>
+      </div>
+
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Service Summary</h2>
+        <p contenteditable="true" class="text-sm font-semibold text-slate-900 px-1 -mx-1">
+          Kitchen Sink Plumbing &amp; Fixture Service (2-Visit Completion)
+        </p>
+        <p contenteditable="true" class="text-sm text-slate-600 mt-1.5 leading-relaxed px-1 -mx-1">
+          Removal of existing under-sink reverse osmosis (RO) filtration unit and installation of deck-mounted kitchen sink soap dispenser using existing sink opening.
+        </p>
+      </div>
+    </section>
+
+    <!-- Line Items Table -->
+    <section class="py-7">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b-2 border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <th class="py-3 pr-4">Service / Item Description</th>
+              <th class="py-3 px-3 text-center w-20">Qty</th>
+              <th class="py-3 px-3 text-right w-28">Rate</th>
+              <th class="py-3 pl-3 text-right w-32">Amount</th>
+              <th class="no-print py-3 pl-2 w-8"></th>
+            </tr>
+          </thead>
+          <tbody id="invoiceItemsBody" class="divide-y divide-slate-200 text-sm">
+            <!-- Line Item 1: Service Call -->
+            <tr class="item-row group">
+              <td class="py-4 pr-4 align-top">
+                <p contenteditable="true" class="font-semibold text-slate-900 px-1 -mx-1">
+                  Service Call &amp; Labor (Two-Trip Kitchen Sink Service)
+                </p>
+                <p contenteditable="true" class="text-xs text-slate-600 mt-1 leading-relaxed px-1 -mx-1">
+                  &bull; <strong>Visit 1:</strong> Shut off cold-water supply feed, disconnect and remove under-sink reverse osmosis (RO) tank/manifold assembly, cap supply line, and seal drain connection.<br>
+                  &bull; <strong>Visit 2:</strong> Install kitchen sink soap dispenser into existing sink hole, secure under-deck mounting hardware, fill/prime dispenser, and perform full leak check.
+                </p>
+              </td>
+              <td class="py-4 px-3 text-center align-top">
+                <span contenteditable="true" oninput="recalculateTotals()" class="item-qty inline-block font-medium text-slate-800 px-1.5 py-0.5">1</span>
+              </td>
+              <td class="py-4 px-3 text-right align-top">
+                <span class="text-slate-400">$</span><span contenteditable="true" oninput="recalculateTotals()" class="item-rate inline-block font-medium text-slate-800 px-1 py-0.5">120.00</span>
+              </td>
+              <td class="py-4 pl-3 text-right align-top font-semibold text-slate-900">
+                $<span class="item-total">120.00</span>
+              </td>
+              <td class="no-print py-4 pl-2 text-right align-top">
+                <button
+                  type="button"
+                  onclick="removeRow(this)"
+                  title="Remove line item"
+                  class="text-slate-300 hover:text-rose-600 transition p-1 rounded cursor-pointer"
+                >
+                  &times;
+                </button>
+              </td>
+            </tr>
+
+            <!-- Line Item 2: Parts & Materials -->
+            <tr class="item-row group">
+              <td class="py-4 pr-4 align-top">
+                <p contenteditable="true" class="font-semibold text-slate-900 px-1 -mx-1">
+                  Parts &amp; Materials
+                </p>
+                <p contenteditable="true" class="text-xs text-slate-600 mt-1 leading-relaxed px-1 -mx-1">
+                  Replacement/installation hardware, compression cap/plug fittings, drain seal components, and plumber's tape/sealant.
+                </p>
+              </td>
+              <td class="py-4 px-3 text-center align-top">
+                <span contenteditable="true" oninput="recalculateTotals()" class="item-qty inline-block font-medium text-slate-800 px-1.5 py-0.5">1</span>
+              </td>
+              <td class="py-4 px-3 text-right align-top">
+                <span class="text-slate-400">$</span><span contenteditable="true" oninput="recalculateTotals()" class="item-rate inline-block font-medium text-slate-800 px-1 py-0.5">40.00</span>
+              </td>
+              <td class="py-4 pl-3 text-right align-top font-semibold text-slate-900">
+                $<span class="item-total">40.00</span>
+              </td>
+              <td class="no-print py-4 pl-2 text-right align-top">
+                <button
+                  type="button"
+                  onclick="removeRow(this)"
+                  title="Remove line item"
+                  class="text-slate-300 hover:text-rose-600 transition p-1 rounded cursor-pointer"
+                >
+                  &times;
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Totals & Payment Instructions -->
+    <section class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start gap-8">
+      <!-- Payment & Notes -->
+      <div class="w-full sm:w-3/5 space-y-3 text-xs text-slate-600">
+        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+          <h3 class="font-bold text-slate-800 uppercase tracking-wider mb-1.5">Payment Options &amp; Notes</h3>
+          <p contenteditable="true" class="leading-relaxed px-1 -mx-1">
+            Please make checks payable to <strong>Holland Family Home Services, Inc.</strong> Cash, check, or electronic payment accepted upon completion.
+          </p>
+          <p contenteditable="true" class="mt-2 text-slate-500 px-1 -mx-1">
+            Thank you for trusting Holland Family Home Services with your home!
+          </p>
+        </div>
+      </div>
+
+      <!-- Summary Box -->
+      <div class="w-full sm:w-2/5 bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-2.5">
+        <div class="flex justify-between text-sm text-slate-600">
+          <span>Subtotal</span>
+          <span class="font-semibold text-slate-900">$<span id="subtotalAmount">160.00</span></span>
+        </div>
+        <div class="flex justify-between text-sm text-slate-600">
+          <span>Tax (0%)</span>
+          <span class="font-medium text-slate-700">$<span id="taxAmount" contenteditable="true" oninput="recalculateTotals()">0.00</span></span>
+        </div>
+        <div class="pt-2.5 border-t border-slate-200 flex justify-between items-baseline">
+          <span class="text-base font-bold text-slate-900">Total Due</span>
+          <span class="text-2xl font-extrabold text-slate-900">$<span id="grandTotalAmount">160.00</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-10 pt-6 border-t border-slate-100 text-center text-xs text-slate-400">
+      <p>Holland Family Home Services, Inc. &bull; 70 Copperhead Trail, Murphy, NC 28906 &bull; (828) 541-2442</p>
+    </footer>
+
+  </main>
+
+  <script>
+    let isPaid = false;
+
+    /**
+     * Parses numeric values safely from editable elements
+     */
+    function parseNumber(text) {
+      if (!text) return 0;
+      const cleaned = String(text).replace(/[^0-9.-]/g, '');
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+
+    /**
+     * Recalculates line item totals, subtotal, and grand total whenever quantities or rates change
+     */
+    function recalculateTotals() {
+      const rows = document.querySelectorAll('#invoiceItemsBody .item-row');
+      let subtotal = 0;
+
+      rows.forEach((row) => {
+        const qtyEl = row.querySelector('.item-qty');
+        const rateEl = row.querySelector('.item-rate');
+        const totalEl = row.querySelector('.item-total');
+
+        const qty = parseNumber(qtyEl ? qtyEl.textContent : 1);
+        const rate = parseNumber(rateEl ? rateEl.textContent : 0);
+        const lineTotal = qty * rate;
+
+        subtotal += lineTotal;
+        if (totalEl) {
+          totalEl.textContent = lineTotal.toFixed(2);
+        }
+      });
+
+      const taxEl = document.getElementById('taxAmount');
+      const tax = parseNumber(taxEl ? taxEl.textContent : 0);
+      const grandTotal = subtotal + tax;
+
+      document.getElementById('subtotalAmount').textContent = subtotal.toFixed(2);
+      document.getElementById('grandTotalAmount').textContent = grandTotal.toFixed(2);
+    }
+
+    /**
+     * Adds a new editable line item row to the invoice table
+     */
+    function addLineItem() {
+      const tbody = document.getElementById('invoiceItemsBody');
+      const tr = document.createElement('tr');
+      tr.className = 'item-row group';
+      tr.innerHTML = `
+        <td class="py-4 pr-4 align-top">
+          <p contenteditable="true" class="font-semibold text-slate-900 px-1 -mx-1">
+            Additional Service / Material
+          </p>
+          <p contenteditable="true" class="text-xs text-slate-600 mt-1 leading-relaxed px-1 -mx-1">
+            Enter description details here.
+          </p>
+        </td>
+        <td class="py-4 px-3 text-center align-top">
+          <span contenteditable="true" oninput="recalculateTotals()" class="item-qty inline-block font-medium text-slate-800 px-1.5 py-0.5">1</span>
+        </td>
+        <td class="py-4 px-3 text-right align-top">
+          <span class="text-slate-400">$</span><span contenteditable="true" oninput="recalculateTotals()" class="item-rate inline-block font-medium text-slate-800 px-1 py-0.5">0.00</span>
+        </td>
+        <td class="py-4 pl-3 text-right align-top font-semibold text-slate-900">
+          $<span class="item-total">0.00</span>
+        </td>
+        <td class="no-print py-4 pl-2 text-right align-top">
+          <button
+            type="button"
+            onclick="removeRow(this)"
+            title="Remove line item"
+            class="text-slate-300 hover:text-rose-600 transition p-1 rounded cursor-pointer"
+          >
+            &times;
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      recalculateTotals();
+      showToast('Added new line item');
+    }
+
+    /**
+     * Removes a line item row and updates totals
+     */
+    function removeRow(button) {
+      const rows = document.querySelectorAll('#invoiceItemsBody .item-row');
+      if (rows.length <= 1) {
+        showToast('At least one line item is required');
+        return;
+      }
+      const row = button.closest('tr');
+      if (row) {
+        row.remove();
+        recalculateTotals();
+        showToast('Removed line item');
+      }
+    }
+
+    /**
+     * Toggles invoice badge between Balance Due and Paid in Full
+     */
+    function togglePaidStatus() {
+      isPaid = !isPaid;
+      const badge = document.getElementById('invoiceStatusBadge');
+      const btn = document.getElementById('statusToggleBtn');
+
+      if (isPaid) {
+        badge.textContent = 'Paid in Full';
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-200';
+        btn.textContent = 'Status: Paid in Full';
+        btn.className = 'px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition cursor-pointer';
+      } else {
+        badge.textContent = 'Balance Due';
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 text-amber-800 border border-amber-200';
+        btn.textContent = 'Status: Due Upon Receipt';
+        btn.className = 'px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition cursor-pointer';
+      }
+    }
+
+    /**
+     * Copies a clean text summary of the invoice for quick texting or emailing
+     */
+    function copyInvoiceSummary() {
+      const invNum = document.getElementById('invoiceNumber').textContent.trim();
+      const invDate = document.getElementById('invoiceDate').textContent.trim();
+      const client = document.getElementById('clientName').textContent.trim();
+      const total = document.getElementById('grandTotalAmount').textContent.trim();
+
+      const summaryText = [
+        `INVOICE ${invNum} (${invDate})`,
+        `From: Holland Family Home Services, Inc.`,
+        `Bill To: ${client}`,
+        `----------------------------------------`,
+        `1. Service Call & Labor (2-Trip Kitchen Sink RO Removal & Soap Dispenser Install): $120.00`,
+        `2. Parts & Materials: $40.00`,
+        `----------------------------------------`,
+        `Total Due: $${total}`,
+        `Thank you for your business!`
+      ].join('\n');
+
+      const tempInput = document.createElement('textarea');
+      tempInput.value = summaryText;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        showToast('Invoice summary copied to clipboard!');
+      } catch (err) {
+        showToast('Unable to copy summary');
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    /**
+     * Displays a brief non-blocking notification toast
+     */
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById('toastMessage');
+      const toastText = document.getElementById('toastText');
+      toastText.textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2600);
+    }
+
+    // Format numbers cleanly on blur
+    document.addEventListener('focusout', (e) => {
+      if (e.target.classList.contains('item-rate') || e.target.id === 'taxAmount') {
+        const val = parseNumber(e.target.textContent);
+        e.target.textContent = val.toFixed(2);
+        recalculateTotals();
+      }
+    });
+  </script>
+</body>
+</html>
